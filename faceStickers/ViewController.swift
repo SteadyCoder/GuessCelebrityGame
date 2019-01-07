@@ -9,6 +9,7 @@
 import UIKit
 import SceneKit
 import ARKit
+import Vision
 
 class ViewController: UIViewController, ARSCNViewDelegate {
 
@@ -22,12 +23,6 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Show statistics such as fps and timing information
         sceneView.showsStatistics = true
-        
-        // Create a new scene
-        let scene = SCNScene(named: "art.scnassets/ship.scn")!
-        
-        // Set the scene to the view
-        sceneView.scene = scene
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -35,6 +30,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
+        configuration.planeDetection = [.horizontal, .vertical]
 
         // Run the view's session
         sceneView.session.run(configuration)
@@ -48,15 +44,59 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
 
     // MARK: - ARSCNViewDelegate
-    
-/*
-    // Override to create and configure nodes for anchors added to the view's session.
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        let node = SCNNode()
-     
-        return node
+        print("render nodes")
+        guard let capturedImage = self.sceneView.session.currentFrame?.capturedImage else { return nil}
+        
+        let image = CIImage(cvPixelBuffer: capturedImage)
+        
+        
+        
+        return nil
     }
-*/
+
+    func renderer(_ renderer: SCNSceneRenderer, didRenderScene scene: SCNScene, atTime time: TimeInterval) {
+        print("scene rendered")
+        guard let capturedImage = self.sceneView.session.currentFrame?.capturedImage else { return }
+        
+        let image = CIImage(cvPixelBuffer: capturedImage)
+        
+        let detectedFaceRequest = VNDetectFaceLandmarksRequest { (request, error) in
+            DispatchQueue.main.async {
+                if let faces = request.results as? [VNFaceObservation] {
+                    for face in faces {
+                        let faceView = UIView(frame: self.faceFrame(from: face.boundingBox))
+                        
+                        faceView.backgroundColor = UIColor.yellow
+                        
+                        self.sceneView.addSubview(faceView)
+                    }
+                }
+            }
+        }
+        
+        DispatchQueue.global().asyncAfter(deadline: DispatchTime(uptimeNanoseconds: 10), execute: {
+            try? VNImageRequestHandler(ciImage: image, orientation: self.imageOrientation).perform([detectedFaceRequest])
+            return
+        })
+    }
+    
+    func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
+        switch camera.trackingState {
+        case .limited(.initializing):
+            print("Initializaint")
+        case .normal:
+            print("works fine")
+        case .notAvailable:
+            print("ooppssss")
+        case .limited(.excessiveMotion):
+            print("slower please")
+        case .limited(.insufficientFeatures):
+            print("control your camera")
+        case .limited(.relocalizing):
+            print("wait please")
+        }
+    }
     
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
@@ -71,5 +111,26 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     func sessionInterruptionEnded(_ session: ARSession) {
         // Reset tracking and/or remove existing anchors if consistent tracking is required
         
+    }
+    
+    private func faceFrame(from boundingBox: CGRect) -> CGRect {
+        
+        //translate camera frame to frame inside the ARSKView
+        let origin = CGPoint(x: boundingBox.minX * self.sceneView.bounds.width, y: (1 - boundingBox.maxY) * self.sceneView.bounds.height)
+        let size = CGSize(width: boundingBox.width * self.sceneView.bounds.width, height: boundingBox.height * self.sceneView.bounds.height)
+        
+        return CGRect(origin: origin, size: size)
+    }
+    
+    private var imageOrientation: CGImagePropertyOrientation {
+        switch UIDevice.current.orientation {
+        case .portrait: return .right
+        case .landscapeRight: return .down
+        case .portraitUpsideDown: return .left
+        case .unknown: fallthrough
+        case .faceUp: fallthrough
+        case .faceDown: fallthrough
+        case .landscapeLeft: return .up
+        }
     }
 }
