@@ -13,6 +13,7 @@
 		60851AF821E36FAA00837D04 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 60851AF621E36FAA00837D04 /* Main.storyboard */; };
 		60851AFA21E36FAB00837D04 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 60851AF921E36FAB00837D04 /* Assets.xcassets */; };
 		60851AFD21E36FAB00837D04 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 60851AFB21E36FAB00837D04 /* LaunchScreen.storyboard */; };
+		60851B0521E4096800837D04 /* SCNNodeExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851B0421E4096800837D04 /* SCNNodeExtension.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		60851AF921E36FAB00837D04 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		60851AFC21E36FAB00837D04 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		60851AFE21E36FAB00837D04 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		60851B0421E4096800837D04 /* SCNNodeExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCNNodeExtension.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -59,6 +61,7 @@
 				60851AF021E36FAA00837D04 /* AppDelegate.swift */,
 				60851AF221E36FAA00837D04 /* art.scnassets */,
 				60851AF421E36FAA00837D04 /* ViewController.swift */,
+				60851B0421E4096800837D04 /* SCNNodeExtension.swift */,
 				60851AF621E36FAA00837D04 /* Main.storyboard */,
 				60851AF921E36FAB00837D04 /* Assets.xcassets */,
 				60851AFB21E36FAB00837D04 /* LaunchScreen.storyboard */,
@@ -140,6 +143,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				60851AF521E36FAA00837D04 /* ViewController.swift in Sources */,
+				60851B0521E4096800837D04 /* SCNNodeExtension.swift in Sources */,
 				60851AF121E36FAA00837D04 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

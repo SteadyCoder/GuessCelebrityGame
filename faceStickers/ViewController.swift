@@ -15,6 +15,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
     
+    private var scanTimer: Timer?
+    private var foundFacesView = [UIView]()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -34,6 +37,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
         // Run the view's session
         sceneView.session.run(configuration)
+        
+        self.scanTimer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(findFaces), userInfo: nil, repeats: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -41,14 +46,13 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Pause the view's session
         sceneView.session.pause()
+        
+        self.scanTimer?.invalidate()
     }
 
     // MARK: - ARSCNViewDelegate
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         print("render nodes")
-        guard let capturedImage = self.sceneView.session.currentFrame?.capturedImage else { return nil}
-        
-        let image = CIImage(cvPixelBuffer: capturedImage)
         
         
         
@@ -57,6 +61,15 @@ class ViewController: UIViewController, ARSCNViewDelegate {
 
     func renderer(_ renderer: SCNSceneRenderer, didRenderScene scene: SCNScene, atTime time: TimeInterval) {
         print("scene rendered")
+        
+    }
+    
+    @objc private func findFaces() {
+        self.foundFacesView.forEach { (faceView) in
+            faceView.removeFromSuperview()
+        }
+        self.foundFacesView.removeAll()
+        
         guard let capturedImage = self.sceneView.session.currentFrame?.capturedImage else { return }
         
         let image = CIImage(cvPixelBuffer: capturedImage)
@@ -67,18 +80,21 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                     for face in faces {
                         let faceView = UIView(frame: self.faceFrame(from: face.boundingBox))
                         
-                        faceView.backgroundColor = UIColor.yellow
+                        faceView.backgroundColor = UIColor.clear
+                        faceView.layer.borderColor = UIColor.yellow.cgColor
+                        faceView.layer.borderWidth = 2.0
                         
                         self.sceneView.addSubview(faceView)
+                        
+                        self.foundFacesView.append(faceView)
                     }
                 }
             }
         }
         
-        DispatchQueue.global().asyncAfter(deadline: DispatchTime(uptimeNanoseconds: 10), execute: {
+        DispatchQueue.global().async {
             try? VNImageRequestHandler(ciImage: image, orientation: self.imageOrientation).perform([detectedFaceRequest])
-            return
-        })
+        }
     }
     
     func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
