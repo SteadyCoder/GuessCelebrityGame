@@ -16,7 +16,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     @IBOutlet var sceneView: ARSCNView!
     
     private var scanTimer: Timer?
-    private var foundFacesView = [UIView]()
+    private var foundFaces = [Face]()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -38,7 +38,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Run the view's session
         sceneView.session.run(configuration)
         
-        self.scanTimer = Timer.scheduledTimer(timeInterval: 0.05, target: self, selector: #selector(findFaces), userInfo: nil, repeats: true)
+        self.scanTimer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(findFaces), userInfo: nil, repeats: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -54,22 +54,11 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
         print("render nodes")
         
-        
-        
         return nil
     }
-
-    func renderer(_ renderer: SCNSceneRenderer, didRenderScene scene: SCNScene, atTime time: TimeInterval) {
-        print("scene rendered")
-        
-    }
+    
     
     @objc private func findFaces() {
-        self.foundFacesView.forEach { (faceView) in
-            faceView.removeFromSuperview()
-        }
-        self.foundFacesView.removeAll()
-        
         guard let capturedImage = self.sceneView.session.currentFrame?.capturedImage else { return }
         
         let image = CIImage(cvPixelBuffer: capturedImage)
@@ -78,15 +67,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             DispatchQueue.main.async {
                 if let faces = request.results as? [VNFaceObservation] {
                     for face in faces {
-                        let faceView = UIView(frame: self.faceFrame(from: face.boundingBox))
-                        
-                        faceView.backgroundColor = UIColor.clear
-                        faceView.layer.borderColor = UIColor.yellow.cgColor
-                        faceView.layer.borderWidth = 2.0
-                        
-                        self.sceneView.addSubview(faceView)
-                        
-                        self.foundFacesView.append(faceView)
+                        let newFace = Face(withFaceObservation: face)
+                        if (!self.foundFaces.contains(newFace)) {
+                            self.addFaceNode(withFaceObservation: newFace)
+                        }
                     }
                 }
             }
@@ -94,6 +78,23 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         DispatchQueue.global().async {
             try? VNImageRequestHandler(ciImage: image, orientation: self.imageOrientation).perform([detectedFaceRequest])
+        }
+    }
+    
+    func addFaceNode(withFaceObservation newFace: Face) {
+        let transformedFaceFrame = self.faceFrame(from: newFace.faceObservation.boundingBox)
+        if (self.normalizeWorldCoord(transformedFaceFrame) != nil) {
+            let position = self.normalizeWorldCoord(transformedFaceFrame)!
+            // Create text SCNNode
+            let text = "Hello face " + String(Int.random(in: 0...10))
+            let scnNodeWithText = SCNNode(withText: text, position: position)
+            
+            newFace.scnNode = scnNodeWithText
+            self.foundFaces.append(newFace)
+            
+            // Add to current scene this node
+            self.sceneView.scene.rootNode.addChildNode(scnNodeWithText)
+            scnNodeWithText.show()
         }
     }
     
@@ -126,7 +127,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     func sessionInterruptionEnded(_ session: ARSession) {
         // Reset tracking and/or remove existing anchors if consistent tracking is required
-        
+        sceneView.session.run(session.configuration!,
+                              options: [.resetTracking,
+                                        .removeExistingAnchors])
     }
     
     private func faceFrame(from boundingBox: CGRect) -> CGRect {
@@ -148,5 +151,38 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         case .faceDown: fallthrough
         case .landscapeLeft: return .up
         }
+    }
+    
+    private func normalizeWorldCoord(_ boundingBox: CGRect) -> SCNVector3? {
+        
+        var array: [SCNVector3] = []
+        Array(0...2).forEach{_ in
+            if let position = determineWorldCoord(boundingBox) {
+                array.append(position)
+            }
+            //usleep(12000) // .012 seconds
+        }
+        
+        if array.isEmpty {
+            return nil
+        }
+        
+        return SCNVector3.center(array)
+    }
+    
+    
+    /// Determine the vector from the position on the screen.
+    ///
+    /// - Parameter boundingBox: Rect of the face on the screen
+    /// - Returns: the vector in the sceneView
+    private func determineWorldCoord(_ boundingBox: CGRect) -> SCNVector3? {
+        let arHitTestResults = sceneView.hitTest(CGPoint(x: boundingBox.midX, y: boundingBox.midY), types: [.featurePoint])
+        
+        // Filter results that are to close
+        if let closestResult = arHitTestResults.filter({ $0.distance > 0.10 }).first {
+            //            print("vector distance: \(closestResult.distance)")
+            return SCNVector3.positionFromTransform(closestResult.worldTransform)
+        }
+        return nil
     }
 }
