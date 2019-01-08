@@ -11,12 +11,27 @@ import SceneKit
 import ARKit
 import Vision
 
+enum PlayerNodeState {
+    case prepare
+    case adding
+    case added
+    case canceled
+}
+
 class ViewController: UIViewController, ARSCNViewDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
+    @IBOutlet weak var addButton: UIButton!
     
     private var scanTimer: Timer?
+    
+    private var scannedFaceViews = [UIView]()
     private var foundFaces = [Face]()
+    
+    private var playerCreateState = PlayerNodeState.prepare
+    private var lastFaceRecognized: VNFaceObservation?
+    
+    private var newPlayer: STCPlayer?
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,7 +40,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.delegate = self
         
         // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
+//        sceneView.showsStatistics = true
+        self.addButton.layer.cornerRadius = 15
+        self.addButton.layer.borderColor = UIColor.white.cgColor
+        self.addButton.layer.borderWidth = 1.0
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -38,7 +56,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         // Run the view's session
         sceneView.session.run(configuration)
         
-        self.scanTimer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(findFaces), userInfo: nil, repeats: true)
+        self.scanTimer = Timer.scheduledTimer(timeInterval: 0.4, target: self, selector: #selector(findFaces), userInfo: nil, repeats: true)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -46,19 +64,46 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Pause the view's session
         sceneView.session.pause()
-        
         self.scanTimer?.invalidate()
     }
-
-    // MARK: - ARSCNViewDelegate
-    func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-        print("render nodes")
+    
+    @IBAction func addPlayerButtonPressed(withButton button: UIButton) {
+        print("button add pressed")
+        self.playerCreateState = .adding
         
-        return nil
+        let alertController = UIAlertController(title: "Add new player 😊", message: "Enter the name of the celebrity for the current player", preferredStyle: .alert)
+        
+        alertController.addTextField { (celebrityTextField) in
+            celebrityTextField.placeholder = "Celebrity name"
+        }
+        
+        alertController.addAction(UIAlertAction(title: "Create", style: .default, handler: { (alertAction) in
+            self.playerCreateState = .added
+            if let firstTextField = alertController.textFields?.first {
+                self.newPlayer = STCPlayer(withCelebrityName: firstTextField.text!)
+                if let lastFace = self.lastFaceRecognized {
+                    self.playerCreateState = .prepare
+                    DispatchQueue.main.async {
+                        self.addFaceNode(withFaceObservation: Face(withFaceObservation: lastFace), andText: self.newPlayer!.celebrityName)
+                        print("create action add node")
+                    }
+                }
+            }
+        }))
+        
+        alertController.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: { (cancelAction) in
+            self.playerCreateState = .prepare
+        }))
+        
+        self.present(alertController, animated: true, completion: nil)
     }
     
-    
     @objc private func findFaces() {
+        self.scannedFaceViews.forEach { (frame) in
+            frame.removeFromSuperview()
+        }
+        self.scannedFaceViews.removeAll()
+        
         guard let capturedImage = self.sceneView.session.currentFrame?.capturedImage else { return }
         
         let image = CIImage(cvPixelBuffer: capturedImage)
@@ -67,10 +112,17 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             DispatchQueue.main.async {
                 if let faces = request.results as? [VNFaceObservation] {
                     for face in faces {
-                        let newFace = Face(withFaceObservation: face)
-                        if (!self.foundFaces.contains(newFace)) {
-                            self.addFaceNode(withFaceObservation: newFace)
+                        if (self.playerCreateState == .prepare) {
+                            let faceView = UIView(frame: self.faceFrame(from: face.boundingBox))
+                            
+                            faceView.backgroundColor = .clear
+                            faceView.layer.borderWidth = 2.0
+                            faceView.layer.borderColor = UIColor.yellow.cgColor
+                            
+                            self.sceneView.addSubview(faceView)
+                            self.scannedFaceViews.append(faceView)
                         }
+                        self.lastFaceRecognized = face
                     }
                 }
             }
@@ -81,12 +133,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         }
     }
     
-    func addFaceNode(withFaceObservation newFace: Face) {
+    func addFaceNode(withFaceObservation newFace: Face, andText playerText: String) {
         let transformedFaceFrame = self.faceFrame(from: newFace.faceObservation.boundingBox)
         if (self.normalizeWorldCoord(transformedFaceFrame) != nil) {
             let position = self.normalizeWorldCoord(transformedFaceFrame)!
             // Create text SCNNode
-            let text = "Hello face " + String(Int.random(in: 0...10))
+            let text = "№ " + String(Int.random(in: 0...10)) + " \(playerText)"
             let scnNodeWithText = SCNNode(withText: text, position: position)
             
             newFace.scnNode = scnNodeWithText

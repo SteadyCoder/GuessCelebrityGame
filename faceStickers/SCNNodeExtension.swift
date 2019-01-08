@@ -34,10 +34,10 @@ extension SCNNode {
         
         // BUBBLE-TEXT
         let bubble = SCNText(string: text, extrusionDepth: CGFloat(bubbleDepth))
-        bubble.font = UIFont(name: "Futura", size: 0.1)?.withTraits(traits: .traitBold)
+        bubble.font = UIFont(name: "Futura", size: 0.15)?.withTraits(traits: .traitBold)
         bubble.alignmentMode =  CATextLayerAlignmentMode.center.rawValue
-        bubble.firstMaterial?.diffuse.contents = UIColor.random()
-        bubble.firstMaterial?.specular.contents = UIColor.white
+        bubble.firstMaterial?.diffuse.contents = UIColor.white
+        bubble.firstMaterial?.specular.contents = UIColor.black
         bubble.firstMaterial?.isDoubleSided = true
         bubble.chamferRadius = CGFloat(bubbleDepth)
         
@@ -54,6 +54,35 @@ extension SCNNode {
         addChildNode(bubbleNode)
         constraints = [billboardConstraint]
         self.position = position
+    }
+    
+    func transformNodeMethod(withText text: String) {
+        let bubbleDepth : Float = 0.01 // the 'depth' of 3D text
+        
+        // TEXT BILLBOARD CONSTRAINT
+        let billboardConstraint = SCNBillboardConstraint()
+        billboardConstraint.freeAxes = SCNBillboardAxis.Y
+        
+        // BUBBLE-TEXT
+        let bubble = SCNText(string: text, extrusionDepth: CGFloat(bubbleDepth))
+        bubble.font = UIFont(name: "Futura", size: 0.1)?.withTraits(traits: .traitBold)
+        bubble.alignmentMode =  CATextLayerAlignmentMode.center.rawValue
+        bubble.firstMaterial?.diffuse.contents = UIColor.random()
+        bubble.firstMaterial?.specular.contents = UIColor.white
+        bubble.firstMaterial?.isDoubleSided = true
+        bubble.chamferRadius = CGFloat(bubbleDepth)
+        
+        // BUBBLE NODE
+        let (minBound, maxBound) = bubble.boundingBox
+        let bubbleNode = SCNNode(geometry: bubble)
+        // Centre Node - to Centre-Bottom point
+        bubbleNode.pivot = SCNMatrix4MakeTranslation(maxBound.x, minBound.y, bubbleDepth / 2)
+        // Reduce default text size
+        bubbleNode.scale = SCNVector3Make(0.1, 0.1, 0.1)
+        bubbleNode.simdPosition = simd_float3.init(x: 0, y: 0, z: 0)
+        
+        addChildNode(bubbleNode)
+        constraints = [billboardConstraint]
     }
     
     func move(_ position: SCNVector3)  {
