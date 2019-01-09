@@ -30,6 +30,8 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     
     private var playerCreateState = PlayerNodeState.prepare
     private var lastFaceRecognized: VNFaceObservation?
+    private var lastSceneBounds: CGRect!
+    private var lastCameraTransform: simd_float4x4!
     
     private var newPlayer: STCPlayer?
     
@@ -41,9 +43,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Show statistics such as fps and timing information
 //        sceneView.showsStatistics = true
-        self.addButton.layer.cornerRadius = 15
+        self.addButton.layer.cornerRadius = self.addButton.frame.width / 2
         self.addButton.layer.borderColor = UIColor.white.cgColor
-        self.addButton.layer.borderWidth = 1.0
+        self.addButton.layer.borderWidth = 2.0
+        self.lastSceneBounds = self.sceneView.bounds
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -51,7 +54,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Create a session configuration
         let configuration = ARWorldTrackingConfiguration()
-        configuration.planeDetection = [.horizontal, .vertical]
+        configuration.planeDetection = [.horizontal]
 
         // Run the view's session
         sceneView.session.run(configuration)
@@ -84,7 +87,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                 if let lastFace = self.lastFaceRecognized {
                     self.playerCreateState = .prepare
                     DispatchQueue.main.async {
-                        self.addFaceNode(withFaceObservation: Face(withFaceObservation: lastFace), andText: self.newPlayer!.celebrityName)
+                        let face = Face(withFaceObservation: lastFace)
+                        face.sceneViewBounds = self.lastSceneBounds
+                        self.addFaceNode(withFaceObservation: face, andText: self.newPlayer!.celebrityName)
+                        
+                        let faceAnchor = ARAnchor(name: "face anchor", transform: self.lastCameraTransform)
+                        self.sceneView.session.add(anchor: faceAnchor)
                         print("create action add node")
                     }
                 }
@@ -113,7 +121,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                 if let faces = request.results as? [VNFaceObservation] {
                     for face in faces {
                         if (self.playerCreateState == .prepare) {
-                            let faceView = UIView(frame: self.faceFrame(from: face.boundingBox))
+                            let faceView = UIView(frame: face.recalculateBoundingBoxForCurrentSceneBounds(currentSceneBounds: self.sceneView.bounds))
                             
                             faceView.backgroundColor = .clear
                             faceView.layer.borderWidth = 2.0
@@ -123,23 +131,32 @@ class ViewController: UIViewController, ARSCNViewDelegate {
                             self.scannedFaceViews.append(faceView)
                         }
                         self.lastFaceRecognized = face
+                        self.lastSceneBounds = self.sceneView.bounds
+                        if let currentFrame = self.sceneView.session.currentFrame {
+                            self.lastCameraTransform = currentFrame.camera.transform
+                        }
                     }
                 }
             }
         }
         
         DispatchQueue.global().async {
-            try? VNImageRequestHandler(ciImage: image, orientation: self.imageOrientation).perform([detectedFaceRequest])
+            try? VNImageRequestHandler(ciImage: image, orientation: UIDevice.imageOrientation).perform([detectedFaceRequest])
         }
     }
     
     func addFaceNode(withFaceObservation newFace: Face, andText playerText: String) {
-        let transformedFaceFrame = self.faceFrame(from: newFace.faceObservation.boundingBox)
-        if (self.normalizeWorldCoord(transformedFaceFrame) != nil) {
-            let position = self.normalizeWorldCoord(transformedFaceFrame)!
+        let transformedFaceFrame = newFace.faceObservation.recalculateBoundingBoxForCurrentSceneBounds(currentSceneBounds: newFace.sceneViewBounds)
+        
+        if let vectorPosition = self.normalizeWorldCoord(transformedFaceFrame) {
             // Create text SCNNode
             let text = "№ " + String(Int.random(in: 0...10)) + " \(playerText)"
-            let scnNodeWithText = SCNNode(withText: text, position: position)
+            var scnNodeWithText : SCNNode!
+            if let fontSize = self.calculateFontSizeDependingOnDistanseBetweenCameraPointAndCurrePoint(withARFrame: self.sceneView.session.currentFrame, withCurrentPoint: vectorPosition) {
+                scnNodeWithText = SCNNode(withText: text, position: vectorPosition, fontSize: CGFloat(fontSize))
+            } else {
+                scnNodeWithText = SCNNode(withText: text, position: vectorPosition)
+            }
             
             newFace.scnNode = scnNodeWithText
             self.foundFaces.append(newFace)
@@ -149,7 +166,43 @@ class ViewController: UIViewController, ARSCNViewDelegate {
             scnNodeWithText.show()
         }
     }
+}
+
+extension ViewController {
+    fileprivate func normalizeWorldCoord(_ boundingBox: CGRect) -> SCNVector3? {
+        
+        var array: [SCNVector3] = []
+        for _ in 0...1 {
+            if let position = self.determineWorldCoord(boundingBox) {
+                array.append(position)
+            }
+        }
+        
+        if array.isEmpty {
+            return nil
+        }
+        
+        return SCNVector3.center(array)
+    }
     
+    /// Determine the vector from the position on the screen.
+    ///
+    /// - Parameter boundingBox: Rect of the face on the screen
+    /// - Returns: the vector in the sceneView
+    private func determineWorldCoord(_ boundingBox: CGRect) -> SCNVector3? {
+        print("determine hit test with bounding box \(boundingBox)")
+        let arHitTestResults = self.sceneView.hitTest(CGPoint(x: boundingBox.minX, y: boundingBox.maxY), types: [.featurePoint])
+        
+        // Filter results that are to close
+        if let closestResult = arHitTestResults.filter({ $0.distance > 0.10 }).first {
+            return SCNVector3.positionFromTransform(closestResult.worldTransform)
+        }
+        return nil
+    }
+
+}
+
+extension ViewController {
     func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
         switch camera.trackingState {
         case .limited(.initializing):
@@ -182,59 +235,5 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         sceneView.session.run(session.configuration!,
                               options: [.resetTracking,
                                         .removeExistingAnchors])
-    }
-    
-    private func faceFrame(from boundingBox: CGRect) -> CGRect {
-        
-        //translate camera frame to frame inside the ARSKView
-        let origin = CGPoint(x: boundingBox.minX * self.sceneView.bounds.width, y: (1 - boundingBox.maxY) * self.sceneView.bounds.height)
-        let size = CGSize(width: boundingBox.width * self.sceneView.bounds.width, height: boundingBox.height * self.sceneView.bounds.height)
-        
-        return CGRect(origin: origin, size: size)
-    }
-    
-    private var imageOrientation: CGImagePropertyOrientation {
-        switch UIDevice.current.orientation {
-        case .portrait: return .right
-        case .landscapeRight: return .down
-        case .portraitUpsideDown: return .left
-        case .unknown: fallthrough
-        case .faceUp: fallthrough
-        case .faceDown: fallthrough
-        case .landscapeLeft: return .up
-        }
-    }
-    
-    private func normalizeWorldCoord(_ boundingBox: CGRect) -> SCNVector3? {
-        
-        var array: [SCNVector3] = []
-        Array(0...2).forEach{_ in
-            if let position = determineWorldCoord(boundingBox) {
-                array.append(position)
-            }
-            //usleep(12000) // .012 seconds
-        }
-        
-        if array.isEmpty {
-            return nil
-        }
-        
-        return SCNVector3.center(array)
-    }
-    
-    
-    /// Determine the vector from the position on the screen.
-    ///
-    /// - Parameter boundingBox: Rect of the face on the screen
-    /// - Returns: the vector in the sceneView
-    private func determineWorldCoord(_ boundingBox: CGRect) -> SCNVector3? {
-        let arHitTestResults = sceneView.hitTest(CGPoint(x: boundingBox.midX, y: boundingBox.midY), types: [.featurePoint])
-        
-        // Filter results that are to close
-        if let closestResult = arHitTestResults.filter({ $0.distance > 0.10 }).first {
-            //            print("vector distance: \(closestResult.distance)")
-            return SCNVector3.positionFromTransform(closestResult.worldTransform)
-        }
-        return nil
     }
 }

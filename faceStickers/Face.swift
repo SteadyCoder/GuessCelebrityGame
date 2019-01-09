@@ -16,6 +16,7 @@ class Face {
     public var scnNode : SCNNode?
     
     public var faceObservation: VNFaceObservation
+    public var sceneViewBounds: CGRect!
     
     private init() {
         self.faceIdentifier = UUID().uuidString

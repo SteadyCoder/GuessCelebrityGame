@@ -25,7 +25,7 @@ extension UIColor {
 }
 
 extension SCNNode {
-    convenience init(withText text : String, position: SCNVector3) {
+    convenience init(withText text : String, position: SCNVector3, fontSize: CGFloat = 0.15) {
         let bubbleDepth : Float = 0.01 // the 'depth' of 3D text
         
         // TEXT BILLBOARD CONSTRAINT
@@ -34,7 +34,7 @@ extension SCNNode {
         
         // BUBBLE-TEXT
         let bubble = SCNText(string: text, extrusionDepth: CGFloat(bubbleDepth))
-        bubble.font = UIFont(name: "Futura", size: 0.15)?.withTraits(traits: .traitBold)
+        bubble.font = UIFont(name: "Helvetica", size: fontSize)?.withTraits(traits: .traitBold)
         bubble.alignmentMode =  CATextLayerAlignmentMode.center.rawValue
         bubble.firstMaterial?.diffuse.contents = UIColor.white
         bubble.firstMaterial?.specular.contents = UIColor.black

@@ -17,6 +17,7 @@
 		60851B0721E40C4600837D04 /* SCNVectorExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851B0621E40C4600837D04 /* SCNVectorExtension.swift */; };
 		60851B0921E41EEE00837D04 /* Face.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851B0821E41EEE00837D04 /* Face.swift */; };
 		60851B0D21E54D6800837D04 /* STCPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851B0C21E54D6800837D04 /* STCPlayer.swift */; };
+		60851B0F21E561E700837D04 /* FaceRecognizeCalculations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851B0E21E561E700837D04 /* FaceRecognizeCalculations.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 		60851B0621E40C4600837D04 /* SCNVectorExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SCNVectorExtension.swift; sourceTree = "<group>"; };
 		60851B0821E41EEE00837D04 /* Face.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Face.swift; sourceTree = "<group>"; };
 		60851B0C21E54D6800837D04 /* STCPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STCPlayer.swift; sourceTree = "<group>"; };
+		60851B0E21E561E700837D04 /* FaceRecognizeCalculations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceRecognizeCalculations.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -71,6 +73,7 @@
 				60851B0C21E54D6800837D04 /* STCPlayer.swift */,
 				60851B0421E4096800837D04 /* SCNNodeExtension.swift */,
 				60851B0621E40C4600837D04 /* SCNVectorExtension.swift */,
+				60851B0E21E561E700837D04 /* FaceRecognizeCalculations.swift */,
 				60851AF621E36FAA00837D04 /* Main.storyboard */,
 				60851AF921E36FAB00837D04 /* Assets.xcassets */,
 				60851AFB21E36FAB00837D04 /* LaunchScreen.storyboard */,
@@ -154,6 +157,7 @@
 				60851AF521E36FAA00837D04 /* ViewController.swift in Sources */,
 				60851B0521E4096800837D04 /* SCNNodeExtension.swift in Sources */,
 				60851B0921E41EEE00837D04 /* Face.swift in Sources */,
+				60851B0F21E561E700837D04 /* FaceRecognizeCalculations.swift in Sources */,
 				60851B0D21E54D6800837D04 /* STCPlayer.swift in Sources */,
 				60851AF121E36FAA00837D04 /* AppDelegate.swift in Sources */,
 				60851B0721E40C4600837D04 /* SCNVectorExtension.swift in Sources */,
