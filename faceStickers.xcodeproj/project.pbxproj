@@ -18,6 +18,8 @@
 		60851B0921E41EEE00837D04 /* Face.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851B0821E41EEE00837D04 /* Face.swift */; };
 		60851B0D21E54D6800837D04 /* STCPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851B0C21E54D6800837D04 /* STCPlayer.swift */; };
 		60851B0F21E561E700837D04 /* FaceRecognizeCalculations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851B0E21E561E700837D04 /* FaceRecognizeCalculations.swift */; };
+		60851B1121E5868A00837D04 /* STCPlayerModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851B1021E5868A00837D04 /* STCPlayerModel.swift */; };
+		60851B1321E586F700837D04 /* STCPlayerModelController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851B1221E586F700837D04 /* STCPlayerModelController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +36,8 @@
 		60851B0821E41EEE00837D04 /* Face.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Face.swift; sourceTree = "<group>"; };
 		60851B0C21E54D6800837D04 /* STCPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STCPlayer.swift; sourceTree = "<group>"; };
 		60851B0E21E561E700837D04 /* FaceRecognizeCalculations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceRecognizeCalculations.swift; sourceTree = "<group>"; };
+		60851B1021E5868A00837D04 /* STCPlayerModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STCPlayerModel.swift; sourceTree = "<group>"; };
+		60851B1221E586F700837D04 /* STCPlayerModelController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = STCPlayerModelController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -70,7 +74,7 @@
 				60851AF221E36FAA00837D04 /* art.scnassets */,
 				60851AF421E36FAA00837D04 /* ViewController.swift */,
 				60851B0821E41EEE00837D04 /* Face.swift */,
-				60851B0C21E54D6800837D04 /* STCPlayer.swift */,
+				60851B1421E5889200837D04 /* Model Layer */,
 				60851B0421E4096800837D04 /* SCNNodeExtension.swift */,
 				60851B0621E40C4600837D04 /* SCNVectorExtension.swift */,
 				60851B0E21E561E700837D04 /* FaceRecognizeCalculations.swift */,
@@ -80,6 +84,16 @@
 				60851AFE21E36FAB00837D04 /* Info.plist */,
 			);
 			path = faceStickers;
+			sourceTree = "<group>";
+		};
+		60851B1421E5889200837D04 /* Model Layer */ = {
+			isa = PBXGroup;
+			children = (
+				60851B0C21E54D6800837D04 /* STCPlayer.swift */,
+				60851B1021E5868A00837D04 /* STCPlayerModel.swift */,
+				60851B1221E586F700837D04 /* STCPlayerModelController.swift */,
+			);
+			path = "Model Layer";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -161,6 +175,8 @@
 				60851B0D21E54D6800837D04 /* STCPlayer.swift in Sources */,
 				60851AF121E36FAA00837D04 /* AppDelegate.swift in Sources */,
 				60851B0721E40C4600837D04 /* SCNVectorExtension.swift in Sources */,
+				60851B1121E5868A00837D04 /* STCPlayerModel.swift in Sources */,
+				60851B1321E586F700837D04 /* STCPlayerModelController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

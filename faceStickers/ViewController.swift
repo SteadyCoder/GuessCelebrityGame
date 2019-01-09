@@ -33,7 +33,7 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     private var lastSceneBounds: CGRect!
     private var lastCameraTransform: simd_float4x4!
     
-    private var newPlayer: STCPlayer?
+    private var modelController = STCPlayerModelController()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -83,13 +83,12 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         alertController.addAction(UIAlertAction(title: "Create", style: .default, handler: { (alertAction) in
             self.playerCreateState = .added
             if let firstTextField = alertController.textFields?.first {
-                self.newPlayer = STCPlayer(withCelebrityName: firstTextField.text!)
                 if let lastFace = self.lastFaceRecognized {
                     self.playerCreateState = .prepare
                     DispatchQueue.main.async {
                         let face = Face(withFaceObservation: lastFace)
                         face.sceneViewBounds = self.lastSceneBounds
-                        self.addFaceNode(withFaceObservation: face, andText: self.newPlayer!.celebrityName)
+                        self.addFaceNode(withFaceObservation: face, andText: firstTextField.text!)
                         
                         let faceAnchor = ARAnchor(name: "face anchor", transform: self.lastCameraTransform)
                         self.sceneView.session.add(anchor: faceAnchor)
@@ -149,8 +148,10 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         let transformedFaceFrame = newFace.faceObservation.recalculateBoundingBoxForCurrentSceneBounds(currentSceneBounds: newFace.sceneViewBounds)
         
         if let vectorPosition = self.normalizeWorldCoord(transformedFaceFrame) {
+            // Add player to model
+            let player = self.modelController.addPlayer(withCelebrityName: playerText)
             // Create text SCNNode
-            let text = "№ " + String(Int.random(in: 0...10)) + " \(playerText)"
+            let text = "№ " + String(player.playerId) + " \(player.celebrityName)"
             var scnNodeWithText : SCNNode!
             if let fontSize = self.calculateFontSizeDependingOnDistanseBetweenCameraPointAndCurrePoint(withARFrame: self.sceneView.session.currentFrame, withCurrentPoint: vectorPosition) {
                 scnNodeWithText = SCNNode(withText: text, position: vectorPosition, fontSize: CGFloat(fontSize))

@@ -9,6 +9,7 @@
 import Foundation
 
 class STCPlayer {
+    var playerId: UInt!
     var celebrityName: String
     
     init(withCelebrityName celebrityName: String) {
