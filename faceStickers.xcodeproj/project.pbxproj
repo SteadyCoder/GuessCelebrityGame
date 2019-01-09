@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		60851AF121E36FAA00837D04 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851AF021E36FAA00837D04 /* AppDelegate.swift */; };
-		60851AF321E36FAA00837D04 /* art.scnassets in Resources */ = {isa = PBXBuildFile; fileRef = 60851AF221E36FAA00837D04 /* art.scnassets */; };
 		60851AF521E36FAA00837D04 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60851AF421E36FAA00837D04 /* ViewController.swift */; };
 		60851AF821E36FAA00837D04 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 60851AF621E36FAA00837D04 /* Main.storyboard */; };
 		60851AFA21E36FAB00837D04 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 60851AF921E36FAB00837D04 /* Assets.xcassets */; };
@@ -25,7 +24,6 @@
 /* Begin PBXFileReference section */
 		60851AED21E36FAA00837D04 /* faceStickers.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = faceStickers.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		60851AF021E36FAA00837D04 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
-		60851AF221E36FAA00837D04 /* art.scnassets */ = {isa = PBXFileReference; lastKnownFileType = wrapper.scnassets; path = art.scnassets; sourceTree = "<group>"; };
 		60851AF421E36FAA00837D04 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
 		60851AF721E36FAA00837D04 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		60851AF921E36FAB00837D04 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -71,16 +69,9 @@
 			isa = PBXGroup;
 			children = (
 				60851AF021E36FAA00837D04 /* AppDelegate.swift */,
-				60851AF221E36FAA00837D04 /* art.scnassets */,
-				60851AF421E36FAA00837D04 /* ViewController.swift */,
-				60851B0821E41EEE00837D04 /* Face.swift */,
+				60851B1521E58AD500837D04 /* View Layer */,
 				60851B1421E5889200837D04 /* Model Layer */,
-				60851B0421E4096800837D04 /* SCNNodeExtension.swift */,
-				60851B0621E40C4600837D04 /* SCNVectorExtension.swift */,
-				60851B0E21E561E700837D04 /* FaceRecognizeCalculations.swift */,
-				60851AF621E36FAA00837D04 /* Main.storyboard */,
-				60851AF921E36FAB00837D04 /* Assets.xcassets */,
-				60851AFB21E36FAB00837D04 /* LaunchScreen.storyboard */,
+				60851B1821E58B0A00837D04 /* Resources */,
 				60851AFE21E36FAB00837D04 /* Info.plist */,
 			);
 			path = faceStickers;
@@ -94,6 +85,36 @@
 				60851B1221E586F700837D04 /* STCPlayerModelController.swift */,
 			);
 			path = "Model Layer";
+			sourceTree = "<group>";
+		};
+		60851B1521E58AD500837D04 /* View Layer */ = {
+			isa = PBXGroup;
+			children = (
+				60851AF421E36FAA00837D04 /* ViewController.swift */,
+				60851B0421E4096800837D04 /* SCNNodeExtension.swift */,
+				60851B0621E40C4600837D04 /* SCNVectorExtension.swift */,
+				60851B1621E58AE700837D04 /* Recognition Classes */,
+			);
+			path = "View Layer";
+			sourceTree = "<group>";
+		};
+		60851B1621E58AE700837D04 /* Recognition Classes */ = {
+			isa = PBXGroup;
+			children = (
+				60851B0821E41EEE00837D04 /* Face.swift */,
+				60851B0E21E561E700837D04 /* FaceRecognizeCalculations.swift */,
+			);
+			path = "Recognition Classes";
+			sourceTree = "<group>";
+		};
+		60851B1821E58B0A00837D04 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				60851AF621E36FAA00837D04 /* Main.storyboard */,
+				60851AFB21E36FAB00837D04 /* LaunchScreen.storyboard */,
+				60851AF921E36FAB00837D04 /* Assets.xcassets */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -154,7 +175,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				60851AF321E36FAA00837D04 /* art.scnassets in Resources */,
 				60851AFD21E36FAB00837D04 /* LaunchScreen.storyboard in Resources */,
 				60851AFA21E36FAB00837D04 /* Assets.xcassets in Resources */,
 				60851AF821E36FAA00837D04 /* Main.storyboard in Resources */,
